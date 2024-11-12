@@ -160,8 +160,8 @@ Para usar la colección:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
 
-## Licencia
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para más detalles.
+## Video
+(https://youtu.be/LklVGrKs2QI)
 
 ## Contacto
 Tu Nombre - [@tutwitter](https://twitter.com/tutwitter)
