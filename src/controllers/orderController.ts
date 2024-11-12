@@ -2,123 +2,68 @@ import { Request, Response } from 'express';
 import { Order, OrderStatus } from '../types/order';
 import { v4 as uuidv4 } from 'uuid';
 
-// Base de datos en memoria
-const orders: Order[] = [];
+let orders: Order[] = [];
 
-// Validación básica de campos requeridos
-const validateOrderData = (data: any) => {
-    const errors = [];
-    if (!data.customer_name) errors.push('customer_name es requerido');
-    if (!data.item) errors.push('item es requerido');
-    if (!data.quantity || data.quantity < 1) errors.push('quantity debe ser mayor a 0');
-    return errors;
-};
-
-// Crear orden
-export const createOrder = (req: Request, res: Response) => {
+export const createOrder = async (req: Request, res: Response) => {
     try {
-        // Validar datos
-        const errors = validateOrderData(req.body);
-        if (errors.length > 0) {
-            return res.status(400).json({ errors });
-        }
-
+        const { customer_name, item, quantity, status } = req.body;
         const newOrder: Order = {
             id: uuidv4(),
-            customer_name: req.body.customer_name,
-            item: req.body.item,
-            quantity: req.body.quantity,
-            status: 'pending',
+            customer_name,
+            item,
+            quantity,
+            status: status || 'pending',
             created_at: new Date()
         };
-
         orders.push(newOrder);
-        res.status(201).json(newOrder);
+        return res.status(201).json(newOrder);
     } catch (error) {
-        res.status(500).json({ message: 'Error al crear la orden' });
+        return res.status(500).json({ message: 'Error creating order' });
     }
 };
 
-// Obtener orden por ID
-export const getOrderById = (req: Request, res: Response) => {
+export const getOrders = async (_req: Request, res: Response) => {
+    try {
+        return res.status(200).json(orders);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error getting orders' });
+    }
+};
+
+export const getOrderById = async (req: Request, res: Response) => {
     try {
         const order = orders.find(o => o.id === req.params.id);
         if (!order) {
-            return res.status(404).json({ message: 'Orden no encontrada' });
+            return res.status(404).json({ message: 'Order not found' });
         }
-        res.json(order);
+        return res.status(200).json(order);
     } catch (error) {
-        res.status(500).json({ message: 'Error al obtener la orden' });
+        return res.status(500).json({ message: 'Error getting order' });
     }
 };
 
-// Actualizar orden
-export const updateOrder = (req: Request, res: Response) => {
+export const updateOrder = async (req: Request, res: Response) => {
     try {
-        const index = orders.findIndex(o => o.id === req.params.id);
-        if (index === -1) {
-            return res.status(404).json({ message: 'Orden no encontrada' });
+        const orderIndex = orders.findIndex(o => o.id === req.params.id);
+        if (orderIndex === -1) {
+            return res.status(404).json({ message: 'Order not found' });
         }
-
-        // Validar status si se proporciona
-        if (req.body.status && !['pending', 'completed', 'cancelled'].includes(req.body.status)) {
-            return res.status(400).json({ message: 'Status no válido' });
-        }
-
-        orders[index] = {
-            ...orders[index],
-            ...req.body,
-            id: orders[index].id, // Mantenemos el ID original
-            created_at: orders[index].created_at // Mantenemos la fecha original
-        };
-
-        res.json(orders[index]);
+        orders[orderIndex] = { ...orders[orderIndex], ...req.body };
+        return res.status(200).json(orders[orderIndex]);
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar la orden' });
+        return res.status(500).json({ message: 'Error updating order' });
     }
 };
 
-// Eliminar orden
-export const deleteOrder = (req: Request, res: Response) => {
+export const deleteOrder = async (req: Request, res: Response) => {
     try {
-        const index = orders.findIndex(o => o.id === req.params.id);
-        if (index === -1) {
-            return res.status(404).json({ message: 'Orden no encontrada' });
+        const orderIndex = orders.findIndex(o => o.id === req.params.id);
+        if (orderIndex === -1) {
+            return res.status(404).json({ message: 'Order not found' });
         }
-
-        orders.splice(index, 1);
-        res.status(204).send();
+        orders = orders.filter(o => o.id !== req.params.id);
+        return res.status(200).json({ message: 'Order deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error al eliminar la orden' });
-    }
-};
-
-// Listar órdenes
-export const getOrders = (req: Request, res: Response) => {
-    try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.page_size) || 10;
-        const status = req.query.status as OrderStatus;
-
-        let result = [...orders];
-
-        // Filtrar por status si se proporciona
-        if (status) {
-            result = result.filter(order => order.status === status);
-        }
-
-        // Paginación simple
-        const start = (page - 1) * limit;
-        const end = start + limit;
-        const paginatedOrders = result.slice(start, end);
-
-        res.json({
-            data: paginatedOrders,
-            total: result.length,
-            page,
-            page_size: limit
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al obtener las órdenes' });
+        return res.status(500).json({ message: 'Error deleting order' });
     }
 }; 

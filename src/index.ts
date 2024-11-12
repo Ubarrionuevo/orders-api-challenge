@@ -1,35 +1,17 @@
-import express, { Request, Response, NextFunction } from 'express';
-import { createOrder, getOrderById, updateOrder, deleteOrder, getOrders } from './controllers/orderController';
+import express from 'express';
+import { createOrder, getOrders, getOrderById, updateOrder, deleteOrder } from './controllers/orderController';
 
 const app = express();
-const PORT = 3000;
-
-// Middlewares básicos
 app.use(express.json());
 
-// Log simple de requests
-app.use((req: Request, res: Response, next: NextFunction) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
-});
+// Routes
+app.post('/orders', createOrder);
+app.get('/orders', getOrders);
+app.get('/orders/:id', getOrderById);
+app.put('/orders/:id', updateOrder);
+app.delete('/orders/:id', deleteOrder);
 
-// Definimos un tipo para nuestros manejadores
-type RequestHandler = (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
-
-// Rutas con tipos correctos
-app.post('/orders', createOrder as RequestHandler);
-app.get('/orders', getOrders as RequestHandler);
-app.get('/orders/:id', getOrderById as RequestHandler);
-app.put('/orders/:id', updateOrder as RequestHandler);
-app.delete('/orders/:id', deleteOrder as RequestHandler);
-
-// Manejo de errores
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err);
-    res.status(500).json({ message: 'Error interno del servidor' });
-});
-
-// Iniciar servidor
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 }); 
