@@ -163,9 +163,6 @@ Para usar la colección:
 ## Video
 (https://youtu.be/LklVGrKs2QI)
 
-## Contacto
-Tu Nombre - [@tutwitter](https://twitter.com/tutwitter)
-Link del proyecto: [https://github.com/tuusuario/orders-api](https://github.com/tuusuario/orders-api)
 
 # Orders API Challenge
 
